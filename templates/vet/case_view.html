@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}Case #{{ report.id }} - FarmVet Connect{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>🩺 Case #{{ report.id }} — {{ report.animal_name or report.tag_number }}</h1>
+        <p class="text-muted">Submitted {{ report.created_at[:10] }} by {{ report.manager_name }}</p>
+    </div>
+    <a href="{{ url_for('vet.dashboard') }}" class="btn btn-secondary">← Back</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+{% endwith %}
+
+<!-- Animal Info -->
+<div class="card">
+    <h2>🐄 Animal Information</h2>
+    <div class="info-grid">
+        <div class="info-item"><strong>Species</strong>{{ report.species }}</div>
+        <div class="info-item"><strong>Breed</strong>{{ report.breed or '—' }}</div>
+        <div class="info-item"><strong>Tag Number</strong>{{ report.tag_number or '—' }}</div>
+        <div class="info-item"><strong>Sex</strong>{{ report.sex or '—' }}</div>
+        <div class="info-item"><strong>Date of Birth</strong>{{ report.dob or '—' }}</div>
+        <div class="info-item"><strong>Weight</strong>{{ report.weight_kg|string + ' kg' if report.weight_kg else '—' }}</div>
+    </div>
+</div>
+
+<!-- Farm Info -->
+<div class="card">
+    <h2>🏡 Farm Information</h2>
+    <div class="info-grid">
+        <div class="info-item"><strong>Farm</strong>{{ report.farm_name }}</div>
+        <div class="info-item"><strong>Location</strong>{{ report.farm_location or '—' }}</div>
+        <div class="info-item"><strong>Region</strong>{{ report.farm_region or '—' }}</div>
+        <div class="info-item"><strong>Manager</strong>{{ report.manager_name }}</div>
+    </div>
+</div>
+
+<!-- Case Summary -->
+<div class="card">
+    <h2>📋 Case Summary</h2>
+    <div class="info-grid" style="margin-bottom:15px">
+        <div class="info-item">
+            <strong>Report Type</strong>
+            <span class="badge">{{ report.report_type | capitalize }}</span>
+        </div>
+        <div class="info-item">
+            <strong>Status</strong>
+            <span class="badge badge-{{ report.status }}">{{ report.status | capitalize }}</span>
+        </div>
+        <div class="info-item">
+            <strong>Symptom Category</strong>{{ report.symptom_category or '—' }}
+        </div>
+        <div class="info-item">
+            <strong>Severity</strong>
+            {% if report.severity_score %}
+                {% for i in range(report.severity_score) %}⭐{% endfor %} ({{ report.severity_score }}/5)
+            {% else %}—{% endif %}
+        </div>
+    </div>
+    {% if report.description %}
+    <div class="form-group">
+        <label style="color:var(--gray-500);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;">Description</label>
+        <div class="description-box">{{ report.description }}</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Questionnaire Answers -->
+{% if answers %}
+<div class="card">
+    <h2>❓ Questionnaire Answers</h2>
+    <table class="data-table">
+        <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+        <tbody>
+            {% for a in answers %}
+            <tr>
+                <td>{{ a.question }}</td>
+                <td>
+                    {% if a.answer == 'Yes' %}<span style="color:var(--red);font-weight:600;">⚠️ Yes</span>
+                    {% elif a.answer == 'No' %}<span style="color:var(--green-600);">✅ No</span>
+                    {% else %}{{ a.answer }}{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Uploaded Files -->
+{% if uploads %}
+<div class="card">
+    <h2>📎 Uploaded Files</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px;">
+        {% for f in uploads %}
+        <div class="file-card">
+            {% if is_image(f.file_type) %}
+                <img src="{{ url_for('static', filename='uploads/reports/' + f.filename) }}"
+                     alt="{{ f.original_filename }}"
+                     style="width:100%; height:140px; object-fit:cover; border-radius:var(--radius-sm); margin-bottom:8px;">
+            {% else %}
+                <div class="file-icon-box">{{ get_file_icon(f.file_type) }}</div>
+            {% endif %}
+            <div class="file-name">{{ f.original_filename }}</div>
+            <a href="{{ url_for('static', filename='uploads/reports/' + f.filename) }}"
+               target="_blank" class="btn btn-sm btn-info" style="width:100%;justify-content:center;margin-top:8px;">
+                👁️ View File
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Vitals -->
+{% if vitals %}
+<div class="card">
+    <h2>❤️ Vital Signs</h2>
+    {% for v in vitals %}
+    <div class="vitals-record">
+        <small class="text-muted">Recorded: {{ v.created_at[:16] }}</small>
+        <div class="vitals-display" style="margin-top:8px">
+            {% if v.temperature_celsius %}<div class="vital-item">🌡️ {{ v.temperature_celsius }}°C</div>{% endif %}
+            {% if v.heart_rate_bpm %}<div class="vital-item">💓 {{ v.heart_rate_bpm }} bpm</div>{% endif %}
+            {% if v.respiratory_rate %}<div class="vital-item">🫁 {{ v.respiratory_rate }}/min</div>{% endif %}
+            {% if v.weight_kg %}<div class="vital-item">⚖️ {{ v.weight_kg }} kg</div>{% endif %}
+            {% if v.body_condition_score %}<div class="vital-item">📊 BCS {{ v.body_condition_score }}/5</div>{% endif %}
+            {% if v.mucous_membrane_color %}<div class="vital-item">👄 {{ v.mucous_membrane_color }}</div>{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Message History -->
+{% if messages %}
+<div class="card">
+    <h2>💬 Message History</h2>
+    <div class="messages-list">
+        {% for msg in messages %}
+        <div class="message-item message-{{ msg.sender_role }}">
+            <div class="message-header">
+                <span class="badge badge-{{ msg.sender_role }}">{{ msg.sender_role | capitalize }}</span>
+                <strong>{{ msg.sender_name }}</strong>
+                <span class="message-date">{{ msg.created_at[:16] }}</span>
+            </div>
+            <div class="message-body">{{ msg.message }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Vet Reply -->
+{% if report.status != 'closed' %}
+<div class="card">
+    <h2>✍️ Send Treatment Plan</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>Treatment Plan & Diagnosis <span class="required">*</span></label>
+            <textarea name="treatment" rows="8" required
+                placeholder="Write your diagnosis and treatment recommendations..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Update Case Status</label>
+            <select name="status">
+                <option value="answered">✅ Answered — awaiting follow-up</option>
+                <option value="closed">🔒 Closed — case resolved</option>
+                <option value="pending">⏳ Keep Pending — need more info</option>
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">📤 Send Treatment Plan</button>
+            <a href="{{ url_for('vet.dashboard') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% else %}
+<div class="card">
+    <div class="alert alert-success">✅ This case is closed.</div>
+</div>
+{% endif %}
+
+<style>
+.file-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    padding: 12px;
+}
+.file-icon-box {
+    font-size: 48px;
+    text-align: center;
+    padding: 20px;
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+}
+.file-name {
+    font-size: 12px;
+    color: var(--gray-500);
+    word-break: break-all;
+    margin-bottom: 4px;
+}
+</style>
+{% endblock %}

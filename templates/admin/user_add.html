@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% block title %}Add User - FarmVet Connect{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>👤 Add New User</h1>
+        <p class="text-muted">Create a veterinarian, farm manager, or admin account</p>
+    </div>
+    <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">← Back to Users</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+{% endwith %}
+
+<form method="POST">
+    <!-- Section 1: Identity -->
+    <div class="form-section">
+        <div class="form-section-header">
+            <div class="form-icon">👤</div>
+            <div>
+                <h2>Account Identity</h2>
+                <p>Basic information for the new user</p>
+            </div>
+        </div>
+        <div class="form-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Full Name <span class="required">*</span></label>
+                    <input type="text" name="name" required
+                           placeholder="e.g. Dr. Sarah Jones"
+                           value="{{ request.form.get('name', '') }}">
+                </div>
+                <div class="form-group">
+                    <label>Email Address <span class="required">*</span></label>
+                    <input type="email" name="email" required
+                           placeholder="e.g. sarah@vetclinic.com"
+                           value="{{ request.form.get('email', '') }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Password <span class="required">*</span></label>
+                    <input type="password" name="password" required
+                           placeholder="Minimum 6 characters">
+                    <small>User can change this after first login</small>
+                </div>
+                <div class="form-group">
+                    <!-- spacer -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Role & Access -->
+    <div class="form-section">
+        <div class="form-section-header">
+            <div class="form-icon">🔐</div>
+            <div>
+                <h2>Role & Access</h2>
+                <p>Define what this user can do on the platform</p>
+            </div>
+        </div>
+        <div class="form-body">
+
+            <!-- Role selector cards -->
+            <div class="form-group">
+                <label>Role <span class="required">*</span></label>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:12px; margin-top:8px;">
+                    <label class="role-card" id="card-vet">
+                        <input type="radio" name="role" value="vet" required
+                               onchange="updateRoleCards(this)"
+                               {% if request.form.get('role') == 'vet' %}checked{% endif %}>
+                        <div class="role-card-inner">
+                            <span class="role-icon">🩺</span>
+                            <div>
+                                <div class="role-name">Veterinarian</div>
+                                <div class="role-desc">Reviews cases & sends treatment plans</div>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="role-card" id="card-manager">
+                        <input type="radio" name="role" value="manager"
+                               onchange="updateRoleCards(this)"
+                               {% if request.form.get('role') == 'manager' %}checked{% endif %}>
+                        <div class="role-card-inner">
+                            <span class="role-icon">🚜</span>
+                            <div>
+                                <div class="role-name">Farm Manager</div>
+                                <div class="role-desc">Reports animal health cases</div>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="role-card" id="card-admin">
+                        <input type="radio" name="role" value="admin"
+                               onchange="updateRoleCards(this)"
+                               {% if request.form.get('role') == 'admin' %}checked{% endif %}>
+                        <div class="role-card-inner">
+                            <span class="role-icon">👨‍💼</span>
+                            <div>
+                                <div class="role-name">Administrator</div>
+                                <div class="role-desc">Full system access</div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-divider"></div>
+
+            <div class="form-group">
+                <label>Assign to Farm</label>
+                <select name="farm_id">
+                    <option value="">-- No Farm (for Vets & Admins) --</option>
+                    {% for farm in farms %}
+                    <option value="{{ farm.id }}"
+                        {% if request.form.get('farm_id') == farm.id|string %}selected{% endif %}>
+                        {{ farm.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small>Required for Farm Managers. Leave blank for Vets and Admins.</small>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions" style="justify-content: flex-end;">
+        <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary btn-lg">
+            ✅ Create Account
+        </button>
+    </div>
+</form>
+
+<style>
+.role-card {
+    display: block;
+    cursor: pointer;
+    border: 1.5px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: all var(--transition);
+    background: var(--white);
+}
+
+.role-card:hover {
+    border-color: var(--green-600);
+    background: var(--green-50);
+}
+
+.role-card input[type="radio"] {
+    display: none;
+}
+
+.role-card input[type="radio"]:checked + .role-card-inner {
+    background: var(--green-50);
+}
+
+.role-card:has(input:checked) {
+    border-color: var(--green-600);
+    box-shadow: 0 0 0 3px rgba(64,145,108,0.12);
+}
+
+.role-card-inner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+}
+
+.role-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.role-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green-900);
+    margin-bottom: 2px;
+}
+
+.role-desc {
+    font-size: 12px;
+    color: var(--gray-500);
+}
+</style>
+
+<script>
+function updateRoleCards(radio) {
+    document.querySelectorAll('.role-card').forEach(card => {
+        card.style.borderColor = '';
+        card.style.boxShadow = '';
+    });
+}
+</script>
+
+{% endblock %}

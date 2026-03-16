@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Add Animal - FarmVet Connect{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>🐄 Register New Animal</h1>
+        <p class="text-muted">Add a new animal to your farm</p>
+    </div>
+    <a href="{{ url_for('manager.home') }}" class="btn btn-secondary">← Back</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+{% endwith %}
+
+<div class="card">
+    <h2>Animal Details</h2>
+    <form method="POST">
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Species <span style="color:red">*</span></label>
+                <select name="species" required>
+                    <option value="">-- Select Species --</option>
+                    <option value="Cattle">🐄 Cattle</option>
+                    <option value="Sheep">🐑 Sheep</option>
+                    <option value="Goat">🐐 Goat</option>
+                    <option value="Pig">🐷 Pig</option>
+                    <option value="Poultry">🐔 Poultry</option>
+                    <option value="Horse">🐴 Horse</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Breed</label>
+                <input type="text" name="breed" placeholder="e.g. Angus, Merino, Friesian">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Tag / ID Number</label>
+                <input type="text" name="tag_number" placeholder="e.g. TAG-001, EAR-4521">
+                <small>Ear tag or official ID number</small>
+            </div>
+            <div class="form-group">
+                <label>Name (optional)</label>
+                <input type="text" name="name" placeholder="e.g. Bessie, Bull #3">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Sex</label>
+                <select name="sex">
+                    <option value="">-- Unknown --</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" name="dob">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Weight (kg)</label>
+                <input type="number" name="weight_kg" step="0.1" min="0" placeholder="e.g. 450.5">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Notes</label>
+            <textarea name="notes" rows="3" placeholder="Any additional information about this animal..."></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                ✅ Register Animal
+            </button>
+            <a href="{{ url_for('manager.home') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

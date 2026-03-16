@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Free Text Report - FarmVet Connect{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>✍️ Free Text Health Report</h1>
+        <p class="text-muted">{{ animal.species }} — {{ animal.tag_number or animal.name or 'Unknown' }}</p>
+    </div>
+    <a href="{{ url_for('manager.home') }}" class="btn btn-secondary">← Back</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+{% endwith %}
+
+<div class="card">
+    <h2>Animal Info</h2>
+    <div class="info-grid">
+        <div class="info-item"><strong>Species</strong>{{ animal.species }}</div>
+        <div class="info-item"><strong>Breed</strong>{{ animal.breed or '—' }}</div>
+        <div class="info-item"><strong>Tag Number</strong>{{ animal.tag_number or '—' }}</div>
+        <div class="info-item"><strong>Sex</strong>{{ animal.sex or '—' }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Describe the Problem</h2>
+    <form method="POST" enctype="multipart/form-data">
+
+        <div class="form-group">
+            <label>Where on the farm is the animal?</label>
+            <input type="text" name="farm_location"
+                   placeholder="e.g. North paddock, Barn 2">
+        </div>
+
+        <div class="form-group">
+            <label>Describe the symptoms in detail <span class="required">*</span></label>
+            <textarea name="description" rows="8" required
+                placeholder="Describe what you are observing — when symptoms started, how the animal is behaving, any changes in eating or drinking, anything unusual..."></textarea>
+            <small>The more detail you provide, the better advice the vet can give.</small>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="form-group">
+            <label>Upload Files (optional)</label>
+            <div class="upload-area">
+                <input type="file" name="files" multiple
+                       accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx"
+                       onchange="updateFileList(this)">
+                <div class="upload-hint">
+                    📎 Photos of the animal, lab results, PDFs
+                    <br><small>JPG, PNG, PDF, DOC — max 10MB each</small>
+                </div>
+            </div>
+            <div id="file-list" style="margin-top:10px;"></div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">✅ Submit Report</button>
+            <a href="{{ url_for('manager.home') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.upload-area {
+    border: 2px dashed var(--gray-300); border-radius: var(--radius-md);
+    padding: 24px; text-align: center; transition: all var(--transition);
+    background: var(--gray-50);
+}
+.upload-area:hover { border-color: var(--green-600); background: var(--green-50); }
+.upload-area input[type="file"] { display: block; width: 100%; cursor: pointer; font-size: 14px; }
+.upload-hint { color: var(--gray-500); font-size: 14px; margin-top: 8px; }
+.file-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--green-50); border: 1px solid var(--green-100);
+    color: var(--green-700); padding: 4px 10px;
+    border-radius: 20px; font-size: 12px; font-weight: 600; margin: 3px;
+}
+</style>
+<script>
+function updateFileList(input) {
+    const list = document.getElementById('file-list');
+    list.innerHTML = '';
+    Array.from(input.files).forEach(f => {
+        list.innerHTML += `<span class="file-tag">📎 ${f.name}</span>`;
+    });
+}
+</script>
+{% endblock %}

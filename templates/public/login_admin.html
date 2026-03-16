@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login - FarmVet Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Roboto',sans-serif; }
+        body {
+            background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-box {
+            background: white;
+            border-radius: 15px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .icon { font-size: 70px; margin-bottom: 15px; }
+        h1 { font-size: 28px; color: #1b4332; margin-bottom: 5px; }
+        p { color: #52b788; margin-bottom: 30px; }
+        .alert-error {
+            background: #f8d7da; border-left: 4px solid #dc3545;
+            color: #721c24; padding: 12px 15px; border-radius: 4px;
+            margin-bottom: 20px; text-align: left; font-size: 14px;
+        }
+        .alert-success {
+            background: #d4edda; border-left: 4px solid #28a745;
+            color: #155724; padding: 12px 15px; border-radius: 4px;
+            margin-bottom: 20px; text-align: left; font-size: 14px;
+        }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-weight: 600; color: #1b4332; margin-bottom: 6px; font-size: 14px; }
+        input {
+            width: 100%; padding: 12px 15px;
+            border: 1px solid #ddd; border-radius: 8px;
+            font-size: 16px; transition: border-color 0.2s;
+        }
+        input:focus { outline: none; border-color: #52b788; }
+        button {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #2d6a4f, #52b788);
+            color: white; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(45,106,79,0.4); }
+        .back { margin-top: 20px; }
+        .back a { color: #52b788; text-decoration: none; font-size: 14px; }
+        .back a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="icon">👨‍💼</div>
+        <h1>Administrator</h1>
+        <p>System Administration Portal</p>
+
+        {% if request.args.get('logged_out') %}
+            <div class="alert-success">You have been logged out successfully.</div>
+        {% endif %}
+
+        {% if error %}
+            <div class="alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email"
+                       placeholder="admin@farmvet.com" required
+                       value="{{ request.form.get('email', '') }}">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                       placeholder="Enter your password" required>
+            </div>
+            <button type="submit">Login as Administrator</button>
+        </form>
+
+        <div class="back">
+            <a href="/">← Back to Portal</a>
+        </div>
+    </div>
+</body>
+</html>

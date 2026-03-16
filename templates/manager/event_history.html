@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}Event History - FarmVet Connect{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>📖 Event History</h1>
+        <p class="text-muted">{{ animal.species }} — {{ animal.tag_number or animal.name or 'Unknown' }}</p>
+    </div>
+    <a href="{{ url_for('manager.home') }}" class="btn btn-secondary">← Back</a>
+</div>
+
+<div class="card">
+    <h2>Animal Info</h2>
+    <div class="info-grid">
+        <div class="info-item"><strong>Species</strong>{{ animal.species }}</div>
+        <div class="info-item"><strong>Breed</strong>{{ animal.breed or '—' }}</div>
+        <div class="info-item"><strong>Tag Number</strong>{{ animal.tag_number or '—' }}</div>
+        <div class="info-item"><strong>Sex</strong>{{ animal.sex or '—' }}</div>
+    </div>
+</div>
+
+{% if timeline %}
+<div class="timeline">
+    {% for entry in timeline %}
+    {% set r = entry.report %}
+
+    <div class="timeline-item">
+        <div class="timeline-marker timeline-marker-{{ r.status }}"></div>
+        <div class="timeline-content">
+
+            <!-- Report Header -->
+            <div class="timeline-header">
+                <span class="badge badge-{{ r.status }}">
+                    {% if r.status == 'pending' %}⏳{% elif r.status == 'answered' %}✅{% else %}🔒{% endif %}
+                    {{ r.status | capitalize }}
+                </span>
+                <span class="badge" style="background:#2d6a4f;color:white;">
+                    {{ r.report_type | capitalize }}
+                </span>
+                {% if r.symptom_category %}
+                <strong>{{ r.symptom_category }}</strong>
+                {% endif %}
+                <span class="timeline-date">{{ r.created_at[:16] }}</span>
+            </div>
+
+            <!-- Severity -->
+            {% if r.severity_score %}
+            <p style="margin-bottom:10px">
+                Severity: {% for i in range(r.severity_score) %}⭐{% endfor %}
+                ({{ r.severity_score }}/5)
+            </p>
+            {% endif %}
+
+            <!-- Description -->
+            {% if r.description %}
+            <div class="description-box" style="margin-bottom:15px">
+                {{ r.description }}
+            </div>
+            {% endif %}
+
+            <!-- Questionnaire Answers -->
+            {% if entry.answers %}
+            <details style="margin-bottom:15px">
+                <summary style="cursor:pointer;font-weight:600;color:#2d6a4f;">
+                    📋 Questionnaire Answers ({{ entry.answers|length }})
+                </summary>
+                <table class="data-table" style="margin-top:10px">
+                    <thead>
+                        <tr><th>Question</th><th>Answer</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for a in entry.answers %}
+                        <tr>
+                            <td>{{ a.question }}</td>
+                            <td>
+                                {% if a.answer == 'Yes' %}
+                                    <span style="color:#e74c3c;font-weight:600;">⚠️ Yes</span>
+                                {% elif a.answer == 'No' %}
+                                    <span style="color:#27ae60;">✅ No</span>
+                                {% else %}
+                                    {{ a.answer }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </details>
+            {% endif %}
+
+            <!-- Vitals -->
+            {% if entry.vitals %}
+            <div style="margin-bottom:15px">
+                <strong style="color:#7f8c8d;font-size:12px;text-transform:uppercase;">
+                    ❤️ Vitals
+                </strong>
+                {% for v in entry.vitals %}
+                <div class="vitals-display" style="margin-top:8px">
+                    {% if v.temperature_celsius %}
+                    <div class="vital-item">🌡️ {{ v.temperature_celsius }}°C</div>
+                    {% endif %}
+                    {% if v.heart_rate_bpm %}
+                    <div class="vital-item">💓 {{ v.heart_rate_bpm }} bpm</div>
+                    {% endif %}
+                    {% if v.respiratory_rate %}
+                    <div class="vital-item">🫁 {{ v.respiratory_rate }}/min</div>
+                    {% endif %}
+                    {% if v.body_condition_score %}
+                    <div class="vital-item">📊 BCS {{ v.body_condition_score }}/5</div>
+                    {% endif %}
+                    {% if v.mucous_membrane_color %}
+                    <div class="vital-item">👄 {{ v.mucous_membrane_color }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Messages -->
+            {% if entry.messages %}
+            <div class="messages-list">
+                {% for msg in entry.messages %}
+                <div class="message-item message-{{ msg.sender_role }}">
+                    <div class="message-header">
+                        <span class="badge badge-{{ msg.sender_role }}">
+                            {{ msg.sender_role | capitalize }}
+                        </span>
+                        <strong>{{ msg.sender_name }}</strong>
+                        <span class="message-date">{{ msg.created_at[:16] }}</span>
+                    </div>
+                    <div class="message-body">{{ msg.message }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <p class="text-muted text-center" style="padding:30px">
+        No health reports yet for this animal.
+    </p>
+</div>
+{% endif %}
+
+<style>
+.timeline { position:relative; padding-left:2rem; margin-top:1rem; }
+.timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:#e0e0e0; }
+.timeline-item { position:relative; margin-bottom:2rem; padding-left:2rem; }
+.timeline-marker { position:absolute; left:-2.4rem; top:0.8rem; width:1rem; height:1rem; border-radius:50%; background:#2d6a4f; border:3px solid white; box-shadow:0 0 0 2px #e0e0e0; }
+.timeline-marker-pending { background:#f39c12; }
+.timeline-marker-answered { background:#27ae60; }
+.timeline-marker-closed { background:#95a5a6; }
+.timeline-content { background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+.timeline-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+.timeline-date { margin-left:auto; font-size:13px; color:#7f8c8d; }
+.description-box { background:#f8f9fa; padding:12px 15px; border-radius:6px; border-left:4px solid #2d6a4f; line-height:1.7; }
+.vitals-display { display:flex; flex-wrap:wrap; gap:8px; }
+.vital-item { background:#e8f5e9; padding:6px 12px; border-radius:6px; font-size:13px; }
+.messages-list { display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+.message-item { padding:12px 15px; border-radius:6px; background:#f8f9fa; }
+.message-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.message-date { margin-left:auto; font-size:12px; color:#7f8c8d; }
+.message-body { line-height:1.7; white-space:pre-wrap; font-size:14px; }
+.message-vet { border-left:4px solid #2980b9; }
+.message-manager { border-left:4px solid #27ae60; }
+.info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; }
+.info-item strong { display:block; color:#7f8c8d; font-size:12px; text-transform:uppercase; margin-bottom:3px; }
+</style>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Record Vitals - FarmVet Connect{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>❤️ Record Vital Signs</h1>
+        <p class="text-muted">{{ animal.species }} — {{ animal.tag_number or animal.name or 'Unknown' }}</p>
+    </div>
+    <a href="{{ url_for('manager.home') }}" class="btn btn-secondary">← Back</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+{% endwith %}
+
+<div class="card">
+    <h2>Animal Info</h2>
+    <div class="info-grid">
+        <div class="info-item"><strong>Species</strong>{{ animal.species }}</div>
+        <div class="info-item"><strong>Breed</strong>{{ animal.breed or '—' }}</div>
+        <div class="info-item"><strong>Tag Number</strong>{{ animal.tag_number or '—' }}</div>
+        <div class="info-item"><strong>Sex</strong>{{ animal.sex or '—' }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Vital Signs</h2>
+    <form method="POST">
+
+        {% if reports %}
+        <div class="form-group">
+            <label>Link to Health Report (optional)</label>
+            <select name="report_id">
+                <option value="">-- Standalone vitals --</option>
+                {% for r in reports %}
+                <option value="{{ r.id }}">
+                    #{{ r.id }} — {{ r.symptom_category or 'Free text' }}
+                    ({{ r.created_at[:10] }})
+                </option>
+                {% endfor %}
+            </select>
+            <small>Link these vitals to an open health report if applicable</small>
+        </div>
+        {% endif %}
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Temperature (°C)</label>
+                <input type="number" name="temperature_celsius"
+                       step="0.1" min="30" max="45"
+                       placeholder="e.g. 38.5">
+                <small>Normal cattle: 38.0–39.0°C</small>
+            </div>
+            <div class="form-group">
+                <label>Weight (kg)</label>
+                <input type="number" name="weight_kg"
+                       step="0.1" min="0"
+                       placeholder="e.g. 450.0">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Heart Rate (bpm)</label>
+                <input type="number" name="heart_rate_bpm"
+                       min="0" max="300"
+                       placeholder="e.g. 72">
+                <small>Normal cattle: 48–84 bpm</small>
+            </div>
+            <div class="form-group">
+                <label>Respiratory Rate (breaths/min)</label>
+                <input type="number" name="respiratory_rate"
+                       min="0" max="100"
+                       placeholder="e.g. 26">
+                <small>Normal cattle: 26–50/min</small>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Body Condition Score (1–5)</label>
+                <select name="body_condition_score">
+                    <option value="">-- Select --</option>
+                    <option value="1">1 — Very thin / Emaciated</option>
+                    <option value="2">2 — Thin</option>
+                    <option value="3">3 — Moderate / Ideal</option>
+                    <option value="4">4 — Fat</option>
+                    <option value="5">5 — Very fat / Obese</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Rumen Sounds (Cattle/Goats)</label>
+                <select name="rumen_sounds">
+                    <option value="">-- Select --</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Reduced">Reduced</option>
+                    <option value="Absent">Absent</option>
+                    <option value="Hypermotile">Hypermotile</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Mucous Membrane Colour</label>
+            <select name="mucous_membrane_color">
+                <option value="">-- Select --</option>
+                <option value="Pink (Normal)">Pink — Normal</option>
+                <option value="Pale">Pale — Possible anaemia</option>
+                <option value="Yellow (Jaundice)">Yellow — Jaundice</option>
+                <option value="Blue (Cyanosis)">Blue — Cyanosis (low oxygen)</option>
+                <option value="Bright Red">Bright Red — Toxaemia</option>
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success">
+                ❤️ Save Vitals
+            </button>
+            <a href="{{ url_for('manager.home') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; }
+.info-item strong { display:block; color:#7f8c8d; font-size:12px; text-transform:uppercase; margin-bottom:3px; }
+</style>
+{% endblock %}

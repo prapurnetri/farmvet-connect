@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Manage Users - FarmVet Connect{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>👥 Manage Users</h1>
+        <p class="text-muted">All platform users</p>
+    </div>
+    <a href="{{ url_for('admin.user_add') }}" class="btn btn-primary">➕ Add User</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+{% endwith %}
+
+<div class="card">
+    <table class="data-table">
+        <thead>
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>Farm</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td><strong>{{ u.name }}</strong></td>
+                <td>{{ u.email }}</td>
+                <td><span class="badge badge-{{ u.role }}">{{ u.role | capitalize }}</span></td>
+                <td>{{ u.farm_name or '—' }}</td>
+                <td>
+                    {% if u.is_enabled %}
+                        <span style="color:#27ae60;font-weight:600;">✅ Active</span>
+                    {% else %}
+                        <span style="color:#e74c3c;font-weight:600;">❌ Disabled</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if u.role != 'admin' %}
+                    <a href="{{ url_for('admin.user_toggle', user_id=u.id) }}"
+                       class="btn btn-sm {% if u.is_enabled %}btn-danger{% else %}btn-success{% endif %}">
+                        {% if u.is_enabled %}Disable{% else %}Enable{% endif %}
+                    </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}Health Report - FarmVet Connect{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>📋 Structured Health Report</h1>
+        <p class="text-muted">{{ animal.species }} — {{ animal.tag_number or animal.name or 'Unknown' }}</p>
+    </div>
+    <a href="{{ url_for('manager.home') }}" class="btn btn-secondary">← Back</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+{% endwith %}
+
+<div class="card">
+    <h2>Animal Info</h2>
+    <div class="info-grid">
+        <div class="info-item"><strong>Species</strong>{{ animal.species }}</div>
+        <div class="info-item"><strong>Breed</strong>{{ animal.breed or '—' }}</div>
+        <div class="info-item"><strong>Tag Number</strong>{{ animal.tag_number or '—' }}</div>
+        <div class="info-item"><strong>Sex</strong>{{ animal.sex or '—' }}</div>
+    </div>
+</div>
+
+<!-- Step 1: Pick category -->
+<div class="card">
+    <h2>Step 1 — Select Symptom Category</h2>
+    <form method="GET">
+        <div class="form-group">
+            <label>Where on the farm is the animal?</label>
+            <input type="text" name="farm_location"
+                   value="{{ request.args.get('farm_location', '') }}"
+                   placeholder="e.g. North paddock, Barn 2">
+        </div>
+        <div class="symptom-grid">
+            {% set icons = {
+                'Respiratory': '🫁', 'Digestive': '🤢',
+                'Musculoskeletal': '🦴', 'Reproductive': '🐣',
+                'Neurological': '🧠', 'Skin & External': '🩹',
+                'Eye & Ear': '👁️', 'Fever & General': '🌡️',
+                'Poisoning / Toxic': '☠️', 'Neonatal': '🐮'
+            } %}
+            {% for cat in categories %}
+            <label class="symptom-card {% if selected_category == cat %}selected{% endif %}">
+                <input type="radio" name="category" value="{{ cat }}"
+                       {% if selected_category == cat %}checked{% endif %}
+                       onchange="this.form.submit()">
+                <span>{{ icons.get(cat, '🐄') }} {{ cat }}</span>
+            </label>
+            {% endfor %}
+        </div>
+    </form>
+</div>
+
+{% if questions %}
+<form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="submit" value="final">
+    <input type="hidden" name="symptom_category" value="{{ selected_category }}">
+    <input type="hidden" name="farm_location" value="{{ request.args.get('farm_location', '') }}">
+
+    <div class="card">
+        <h2>Step 2 — {{ selected_category }} Questions</h2>
+        <p class="text-muted" style="margin-bottom:20px">Answer as many as you can.</p>
+        {% for q in questions %}
+        <div class="form-group">
+            <label>{{ loop.index }}. {{ q.text }}</label>
+            {% if q.type == 'yesno' %}
+            <select name="q_{{ q.id }}">
+                <option value="">-- Select --</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="Unsure">Unsure</option>
+            </select>
+            {% else %}
+            <input type="text" name="q_{{ q.id }}" placeholder="Your answer...">
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h2>Step 3 — Description & Files</h2>
+
+        <div class="form-group">
+            <label>Additional Description (optional)</label>
+            <textarea name="description" rows="4"
+                placeholder="Describe what you are observing in your own words..."></textarea>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="form-group">
+            <label>Upload Files (optional)</label>
+            <div class="upload-area">
+                <input type="file" name="files" multiple
+                       accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx"
+                       id="file-input" onchange="updateFileList(this)">
+                <div class="upload-hint">
+                    📎 Photos of the animal, lab results, PDFs
+                    <br><small>JPG, PNG, PDF, DOC — max 10MB each</small>
+                </div>
+            </div>
+            <div id="file-list" style="margin-top:10px;"></div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">
+                ✅ Submit Health Report
+            </button>
+            <a href="{{ url_for('manager.home') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+</form>
+{% endif %}
+
+<style>
+.upload-area {
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    text-align: center;
+    transition: all var(--transition);
+    cursor: pointer;
+    background: var(--gray-50);
+}
+.upload-area:hover { border-color: var(--green-600); background: var(--green-50); }
+.upload-area input[type="file"] { display: block; width: 100%; cursor: pointer; font-size: 14px; }
+.upload-hint { color: var(--gray-500); font-size: 14px; margin-top: 8px; }
+.file-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--green-50); border: 1px solid var(--green-100);
+    color: var(--green-700); padding: 4px 10px;
+    border-radius: 20px; font-size: 12px; font-weight: 600; margin: 3px;
+}
+</style>
+
+<script>
+function updateFileList(input) {
+    const list = document.getElementById('file-list');
+    list.innerHTML = '';
+    Array.from(input.files).forEach(f => {
+        list.innerHTML += `<span class="file-tag">📎 ${f.name}</span>`;
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Cases - FarmVet Connect{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>🩺 Veterinarian Dashboard</h1>
+        <p class="text-muted">Review and respond to animal health cases</p>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <a href="?status=pending" class="filter-btn {% if filter_status == 'pending' %}active{% endif %}">⏳ Pending</a>
+    <a href="?status=answered" class="filter-btn {% if filter_status == 'answered' %}active{% endif %}">✅ Answered</a>
+    <a href="?status=closed" class="filter-btn {% if filter_status == 'closed' %}active{% endif %}">🔒 Closed</a>
+    <a href="?status=all" class="filter-btn {% if filter_status == 'all' %}active{% endif %}">📋 All</a>
+</div>
+
+<div class="card">
+    {% if reports %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Animal</th><th>Farm</th><th>Category</th>
+                <th>Type</th><th>Severity</th><th>Submitted</th><th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reports %}
+            <tr>
+                <td>
+                    <strong>{{ r.animal_name or '—' }}</strong>
+                    <br><small>{{ r.species }} • {{ r.tag_number or '—' }}</small>
+                </td>
+                <td>{{ r.farm_name }}</td>
+                <td>{{ r.symptom_category or '—' }}</td>
+                <td><span class="badge">{{ r.report_type | capitalize }}</span></td>
+                <td>
+                    {% if r.severity_score %}
+                        {% for i in range(r.severity_score) %}⭐{% endfor %}
+                    {% else %}—{% endif %}
+                </td>
+                <td><small>{{ r.created_at[:10] }}</small></td>
+                <td>
+                    <a href="{{ url_for('vet.case_view', report_id=r.id) }}"
+                       class="btn btn-sm btn-primary">View & Reply</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted text-center" style="padding:30px">
+        No {{ filter_status }} cases at the moment.
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard - FarmVet Connect{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>📊 Admin Dashboard</h1>
+        <p class="text-muted">System overview — FarmVet Connect</p>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_farms }}</div>
+        <div class="stat-label">🏡 Farms</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_animals }}</div>
+        <div class="stat-label">🐄 Animals</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_users }}</div>
+        <div class="stat-label">👥 Users</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:#f39c12">{{ stats.pending }}</div>
+        <div class="stat-label">⏳ Pending Cases</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:#27ae60">{{ stats.answered }}</div>
+        <div class="stat-label">✅ Answered</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:#e74c3c">{{ stats.alerts }}</div>
+        <div class="stat-label">🚨 Herd Alerts</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Quick Actions</h2>
+    <div class="button-group">
+        <a href="{{ url_for('admin.user_add') }}" class="btn btn-primary">
+            👤 Add User
+        </a>
+        <a href="{{ url_for('admin.farm_add') }}" class="btn btn-success">
+            🏡 Add Farm
+        </a>
+        <a href="{{ url_for('admin.users') }}" class="btn btn-info">
+            👥 Manage Users
+        </a>
+        <a href="{{ url_for('admin.farms') }}" class="btn btn-secondary">
+            🚜 Manage Farms
+        </a>
+    </div>
+</div>
+
+{% if recent_reports %}
+<div class="card">
+    <h2>Recent Cases</h2>
+    <table class="data-table">
+        <thead>
+            <tr><th>Animal</th><th>Farm</th><th>Category</th><th>Status</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+            {% for r in recent_reports %}
+            <tr>
+                <td><strong>{{ r.animal_name or '—' }}</strong><br><small>{{ r.species }}</small></td>
+                <td>{{ r.farm_name }}</td>
+                <td>{{ r.symptom_category or 'Free text' }}</td>
+                <td><span class="badge badge-{{ r.status }}">{{ r.status | capitalize }}</span></td>
+                <td><small>{{ r.created_at[:10] }}</small></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
