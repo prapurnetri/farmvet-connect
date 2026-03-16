@@ -1,0 +1,15 @@
+# Database
+farmvet.db
+
+# Uploaded files
+static/uploads/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# OS
+.DS_Store
