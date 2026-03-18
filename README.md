@@ -169,7 +169,3 @@ Generate a Gmail App Password at myaccount.google.com → Security → App Passw
 [GitHub](https://github.com/prapurnetri)
 
 ---
-
-## 📄 License
-
-This project is for portfolio and demonstration purposes.
