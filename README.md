@@ -118,26 +118,26 @@ python3 app.py
 
 Open your browser at `http://127.0.0.1:5000`
 
-### Default Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@farmvet.com | admin123 |
-
-Create vet and farm manager accounts via the Admin panel.
+### Default Login
+- Email: `admin@farmvet.com`
+- Change the password on first login via the Admin panel.
 
 ---
 
-## 📧 Email Notifications (Optional)
+## 📧 Email Notifications
 
-To enable Gmail notifications:
+The platform sends automated email alerts via Gmail SMTP — vets are notified 
+when a new case is submitted, and farm managers are notified when a treatment 
+plan is ready.
+
+To configure your Gmail credentials before running:
 ```bash
-export FARMVET_EMAIL="yourgmail@gmail.com"
+export FARMVET_EMAIL="your@gmail.com"
 export FARMVET_EMAIL_PASSWORD="your-app-password"
 python3 app.py
 ```
 
-Generate a Gmail App Password at: [myaccount.google.com](https://myaccount.google.com) → Security → App Passwords
+Generate a Gmail App Password at myaccount.google.com → Security → App Passwords.
 
 ---
 
